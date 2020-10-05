@@ -166,7 +166,12 @@ class Bot
       reply(bot, message, "Esto no es un grupo :/")
       return
     end
-    from_timezone_name = @timezones.first(:from_id => message.from.id)[:timezone]
+    from_timezone_query = @timezones.first(:from_id => message.from.id)
+    if from_timezone_query == nil
+      reply(bot, message, "No me sé tu zona horaria :/")
+      return
+    end
+    from_timezone_name = from_timezone_query[:timezone]
     if from_timezone_name == nil
       reply(bot, message, "No sé dónde estás :( Dime /guardar_zona en privado primero.")
       return
