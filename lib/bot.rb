@@ -181,7 +181,6 @@ class Bot
 
     date_epoch = Time.gm(command_and_args[1]).to_i
     date_to_translate = from_timezone.local_to_utc(Time.at(date_epoch))
-    @log_out.info(from_timezone.dst? Time.now)
 
     members_list = @chat_members.where(:chat_id => message.chat.id).map(:from_id)
     translated_dates = @timezones.where(from_id: members_list).as_hash(:from_name, :timezone).map do |from_name, timezone|
