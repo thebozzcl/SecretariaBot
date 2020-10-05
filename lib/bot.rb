@@ -10,19 +10,19 @@ class Bot
     @log_out = log_out
 
     commands = "Puedes decirme:
-      \t• /start o /ayuda para ver este mensaje.
-      \t• Para manejar tus grupos:
-      \t\t\t• /holi para saludarme. Si estamos en un grupo, me voy a acordar de que eres un miembro.
-      \t\t\t• /chai para despedirse de mi. Si estamos en un grupo, me voy a olvidar de que eres un miembro.
-      \t\t\t• /mis_grupos para mostrarte en qué grupos sé que estás.
-      \t• Para manejar tu zona horaria:
-      \t\t\t• /guardar_zona para que te pregunte tu zona horaria. Esto sólo funciona en mensajes privados.
-      \t\t\t• /listi para cerrar el cuestionario de zona horaria.
-      \t\t\t• /mi_zona para mostrar la zona horaria que tengo guardada para ti.
-      \t\t\t• /olvidar_zona para que me olvide de tu zona horaria.
-      \t• /olvidar_todo para herir mis sentimientos.
-      \t• Para ayudarte a manejar eventos dentro del grupo:
-      \t\t\t• /traducir_fecha [fecha y hora local] para traducir una fecha a todas las zonas horarias que tengo guardadas para el grupo."
+      • /start o /ayuda para ver este mensaje.
+      • Para manejar tus grupos:
+      ◦ /holi para saludarme. Si estamos en un grupo, me voy a acordar de que eres un miembro.
+      ◦ /chai para despedirse de mi. Si estamos en un grupo, me voy a olvidar de que eres un miembro.
+      ◦ /mis_grupos para mostrarte en qué grupos sé que estás.
+      • Para manejar tu zona horaria:
+      ◦ /guardar_zona para que te pregunte tu zona horaria. Esto sólo funciona en mensajes privados.
+      ◦ /listi para cerrar el cuestionario de zona horaria.
+      ◦ /mi_zona para mostrar la zona horaria que tengo guardada para ti.
+      ◦ /olvidar_zona para que me olvide de tu zona horaria.
+      • /olvidar_todo para herir mis sentimientos.
+      • Para ayudarte a manejar eventos dentro del grupo:
+      ◦ /traducir_fecha [fecha y hora local] para traducir una fecha a todas las zonas horarias que tengo guardadas para el grupo."
 
     Timezone::Lookup.config(:geonames) do |c|
       c.username = geonames_username
