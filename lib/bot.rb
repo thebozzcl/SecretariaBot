@@ -58,7 +58,7 @@ class Bot
             when nil
               try_extract_location(bot, message)
             else
-              reply(bot, message, "No te cacho :/ #{commands}")
+              @log_out.info("Unexpected message: #{message.inspect}")
             end
           else
             @log_out.info("Unexpected message: #{message.inspect}")
