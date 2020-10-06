@@ -123,7 +123,8 @@ class Bot
       @log_out.info("Unexpected message: #{message.inspect}")
       return
     end
-    timezone_name = Timezone.lookup(message.location.latitude, message.location.longitude).name
+    timezone = Timezone.lookup(message.location.latitude, message.location.longitude)
+    timezone_name = timezone.name
     @timezones.insert_conflict(:replace).insert(
         :from_id => message.from.id,
         :from_name => message.from.username,
@@ -184,13 +185,16 @@ class Bot
       return
     end
 
-    date_epoch = Time.gm(command_and_args[1]).to_i
-    date_to_translate = from_timezone.local_to_utc(Time.at(date_epoch))
+    from_time_base = Time.parse("#{command_and_args[1]} UTC")
+    from_dst_offset = from_timezone.dst?(from_time_base) ? 0 : 3600
+    from_timezone_offset = from_timezone.utc_offset(Time.now)
+    from_epoch = from_time_base.to_i - from_timezone_offset + from_dst_offset
+    from_time_final = from_timezone.time_with_offset(Time.at(from_epoch))
 
     members_list = @chat_members.where(:chat_id => message.chat.id).map(:from_id)
     translated_dates = @timezones.where(from_id: members_list).as_hash(:from_name, :timezone).map do |from_name, timezone|
       to_timezone = Timezone.fetch(timezone)
-      translated_date = to_timezone.time_with_offset(date_to_translate)
+      translated_date = to_timezone.utc_to_local(from_time_final.to_datetime)
       "#{from_name}: #{translated_date}"
     end
     if translated_dates.empty?
