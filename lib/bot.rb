@@ -169,7 +169,7 @@ class Bot
     end
     from_timezone_query = @timezones.first(:from_id => message.from.id)
     if from_timezone_query == nil
-      reply(bot, message, "No me sé tu zona horaria :/")
+      reply(bot, message, "No sé dónde estás :( Dime /guardar_zona en privado primero.")
       return
     end
     from_timezone_name = from_timezone_query[:timezone]
@@ -181,21 +181,20 @@ class Bot
 
     command_and_args = message.text.split(" ", 2)
     if command_and_args.length < 2
-      reply(bot, message, "No me dijiste qué hora traducir :/")
-      return
+      from_time_final = Time.now.utc
+    else
+      from_time_base = Time.parse("#{command_and_args[1]} UTC")
+      from_dst_offset = from_timezone.dst?(from_time_base) ? 0 : 3600
+      from_timezone_offset = from_timezone.utc_offset(Time.now)
+      from_epoch = from_time_base.to_i - from_timezone_offset + from_dst_offset
+      from_time_final = from_timezone.time_with_offset(Time.at(from_epoch))
     end
-
-    from_time_base = Time.parse("#{command_and_args[1]} UTC")
-    from_dst_offset = from_timezone.dst?(from_time_base) ? 0 : 3600
-    from_timezone_offset = from_timezone.utc_offset(Time.now)
-    from_epoch = from_time_base.to_i - from_timezone_offset + from_dst_offset
-    from_time_final = from_timezone.time_with_offset(Time.at(from_epoch))
 
     members_list = @chat_members.where(:chat_id => message.chat.id).map(:from_id)
     translated_dates = @timezones.where(from_id: members_list).as_hash(:from_name, :timezone).map do |from_name, timezone|
       to_timezone = Timezone.fetch(timezone)
       translated_date = to_timezone.utc_to_local(from_time_final.to_datetime)
-      "#{from_name}: #{translated_date}"
+      "#{from_name}: #{translated_date.strftime("%F %T")}"
     end
     if translated_dates.empty?
       reply(bot, message, "Nadie me ha saludado en este grupo :(")
