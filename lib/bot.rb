@@ -170,9 +170,14 @@ class Bot
 
     members_list = @chat_info.get_known_chat_members(message.chat.id)
     translated_dates = @user_info.get_users_info(members_list).map do |user_info|
-      to_timezone = Timezone.fetch(user_info[:timezone])
-      translated_date = to_timezone.utc_to_local(from_time_final.to_datetime)
-      "#{user_info[:from_name]}: #{translated_date.strftime("%F %T")}"
+      user_timezone_name = user_info[:timezone]
+      if user_timezone_name == nil
+        "#{user_info[:from_name]}: No sé :("
+      else
+        to_timezone = Timezone.fetch(user_timezone_name)
+        translated_date = to_timezone.utc_to_local(from_time_final.to_datetime)
+        "#{user_info[:from_name]}: #{translated_date.strftime("%F %T")}"
+      end
     end
     if translated_dates.empty?
       reply(bot, message, "Nadie me ha saludado en este grupo :(")
@@ -184,19 +189,39 @@ class Bot
   end
 
   def reply(bot, message, text)
-    bot.api.send_message(
-        chat_id: message.chat.id,
-        reply_to_message_id: message.message_id,
-        text: text
-    )
+    begin
+      bot.api.send_message(
+          chat_id: message.chat.id,
+          reply_to_message_id: message.message_id,
+          text: text
+      )
+    rescue => error
+      case error.error_code
+      when nil
+        return
+      when "403" # Blocked
+        @user_info.remove_user_info(message.from.id)
+        @chat_info.remove_user_info(message.from.id)
+      end
+    end
   end
 
   def reply_and_clear_kb(bot, message, text)
-    kb = Telegram::Bot::Types::ReplyKeyboardRemove.new(remove_keyboard: true)
-    bot.api.send_message(
-        chat_id: message.chat.id,
-        reply_to_message_id: message.message_id,
-        text: text, reply_markup: kb
-    )
+    begin
+      kb = Telegram::Bot::Types::ReplyKeyboardRemove.new(remove_keyboard: true)
+      bot.api.send_message(
+          chat_id: message.chat.id,
+          reply_to_message_id: message.message_id,
+          text: text, reply_markup: kb
+      )
+    rescue => error
+      case error.error_code
+      when nil
+        return
+      when "403" # Blocked
+        @user_info.remove_user_info(message.from.id)
+        @chat_info.remove_user_info(message.from.id)
+      end
+    end
   end
 end
