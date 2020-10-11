@@ -92,7 +92,7 @@ class Bot
     markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(keyboard: kb)
     bot.api.send_message(
         chat_id: message.chat.id,
-        text: 'Para guardar sus zonas horaria, necesito ver tu ubicación.',
+        text: 'Para guardar tu zona horaria, necesito ver tu ubicación.',
         reply_markup: markup
     )
   end
