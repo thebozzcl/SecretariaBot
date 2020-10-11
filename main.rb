@@ -1,4 +1,6 @@
 require_relative './lib/bot.rb'
+require_relative './lib/dao/user_info.rb'
+require_relative './lib/dao/chat_info.rb'
 require 'logger'
 require 'sequel'
 
@@ -14,25 +16,11 @@ geonames_username = ARGV[1]
 
 db = Sequel.sqlite("./secretariabot.db")
 
-db.create_table? :timezones do
-  String :from_id, unique: false, null: false
-  String :from_name, unique: false, null: false
-  String :timezone, unique: false, null: false
-  primary_key [:from_id], name: :id
-end
-timezones = db[:timezones]
-
-db.create_table? :chat_members do
-  String :chat_id, unique: false, null: false
-  String :from_id, unique: false, null: false
-  String :from_name, unique: false, null: false
-  String :chat_title, unique: false, null: false
-  primary_key [:chat_id, :from_id], name: :id
-end
-chat_members = db[:chat_members]
+chat_info = ChatInfo.new(db)
+user_info = UserInfo.new(db)
 
 Timezone::Lookup.config(:geonames) do |c|
-  c.username = 'your_geonames_username_goes_here'
+  c.username = geonames_username
 end
 
-Bot.new(bot_token, geonames_username, timezones, chat_members, log_out)
+Bot.new(bot_token, geonames_username, chat_info, user_info, log_out)

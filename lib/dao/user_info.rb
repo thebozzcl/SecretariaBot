@@ -29,10 +29,10 @@ class UserInfo
   end
 
   def get_user_info (from_id)
-    @user_info.where(:from_id => from_id)
+    @user_info.first(:from_id => from_id)
   end
 
-  def get_users_info (*from_ids)
-    @user_info.where([:id, from_ids])
+  def get_users_info (from_ids)
+    @user_info.where(from_id: from_ids)
   end
 end

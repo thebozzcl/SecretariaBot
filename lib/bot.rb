@@ -4,25 +4,20 @@ require 'time'
 
 class Bot
 
-  def initialize (bot_token, geonames_username, timezones, chat_members, log_out)
-    @timezones = timezones
-    @chat_members = chat_members
+  def initialize (bot_token, geonames_username, chat_info, user_info, log_out)
+    @chat_info = chat_info
+    @user_info = user_info
     @log_out = log_out
 
     commands = "Puedes decirme:
-      • /start o /ayuda para ver este mensaje.
-      • Para manejar tus grupos:
-      ◦ /holi para saludarme. Si estamos en un grupo, me voy a acordar de que eres un miembro.
-      ◦ /chai para despedirse de mi. Si estamos en un grupo, me voy a olvidar de que eres un miembro.
-      ◦ /mis_grupos para mostrarte en qué grupos sé que estás.
-      • Para manejar tu zona horaria:
-      ◦ /guardar_zona para que te pregunte tu zona horaria. Esto sólo funciona en mensajes privados.
-      ◦ /listi para cerrar el cuestionario de zona horaria.
-      ◦ /mi_zona para mostrar la zona horaria que tengo guardada para ti.
-      ◦ /olvidar_zona para que me olvide de tu zona horaria.
-      • /olvidar_todo para herir mis sentimientos.
-      • Para ayudarte a manejar eventos dentro del grupo:
-      ◦ /traducir_fecha [fecha y hora local] para traducir una fecha a todas las zonas horarias que tengo guardadas para el grupo."
+      • /start o /ayuda para ver este mensaje
+      • /holi o /holo
+      • /mis_grupos
+      • /guardar_zona
+      • /mejor_no para cancelar /guardar_zona
+      • /mi_zona
+      • /olvidar
+      • /traducir_fecha [fecha y hora local]"
 
     Timezone::Lookup.config(:geonames) do |c|
       c.username = geonames_username
@@ -34,25 +29,25 @@ class Bot
           case message
           when Telegram::Bot::Types::Message
             command = (message.text == nil) ? nil : message.text.split(" ")[0]
+            if command != '/olvidar'
+              @chat_info.add_chat_member(message.chat.type, message.from.id, message.chat.id)
+              @user_info.register_user_info(message.from.id, message.from.username)
+            end
             case command
             when '/start', '/ayuda'
               reply(bot, message, commands)
-            when '/holi'
+            when '/holi', '/holo'
               holi(bot, message)
-            when '/chai'
-              chai(bot, message)
             when '/mis_grupos'
               mis_grupos(bot, message)
             when '/guardar_zona'
-              guardar_zona(bot, message)
-            when '/listi'
-              listi(bot, message)
+              preguntar_zona(bot, message)
+            when '/mejor_no'
+              cancelar_preguntar_zona(bot, message)
             when '/mi_zona'
               mi_zona(bot, message)
-            when '/olvidar_zona'
-              olvidar_zona(bot, message)
-            when '/olvidar_todo'
-              olvidar_todo(bot, message)
+            when '/olvidar'
+              olvidar(bot, message)
             when '/traducir_fecha'
               traducir_fecha(bot, message)
             when nil
@@ -69,40 +64,24 @@ class Bot
   end
 
   def holi(bot, message)
-    if message.chat.type != "private"
-      @chat_members.insert_conflict(:replace).insert(
-          :chat_id => message.chat.id,
-          :from_id => message.from.id,
-          :from_name => message.from.username,
-          :chat_title => message.chat.title
-      )
-    end
     reply(bot, message, "Holi, #{message.from.first_name}.")
   end
 
-  def chai(bot, message)
-    if message.chat.type != "private"
-      @chat_members.where(
-          :chat_id => message.chat.id,
-          :from_id => message.from.id
-      ).delete
-    end
-    reply(bot, message,"Chai, #{message.from.first_name}.")
-  end
-
   def mis_grupos(bot, message)
-    groups = @chat_members.where(:from_id => message.from.id).map(:chat_title)
-    if groups.empty?
+    chat_ids = @chat_info.get_known_chats_for_user(message.from.id)
+    if chat_ids.empty?
       reply(bot, message, "No me has saludado en ningún grupo :(")
       return
     end
 
-    groups_string = groups.join("\n• ")
-    reply(bot, message, "Tus grupos son:\n• #{groups_string}"
-    )
+    chat_names = chat_ids.map do |chat_id|
+      @chat_info.get_chat_name(bot, chat_id)
+    end.to_a
+    chat_names_string = chat_names.join("\n• ")
+    reply(bot, message, "Tus grupos son:\n• #{chat_names_string}")
   end
 
-  def guardar_zona(bot, message)
+  def preguntar_zona(bot, message)
     if message.chat.type != "private"
       reply(bot, message, "Nu, me da vergüenza >_< Háblame en privado.")
       return
@@ -118,6 +97,14 @@ class Bot
     )
   end
 
+  def cancelar_preguntar_zona(bot, message)
+    if message.chat.type != "private"
+      reply(bot, message, "Nu, me da vergüenza >_< Háblame en privado.")
+      return
+    end
+    reply_and_clear_kb(bot, message,"Bueni.")
+  end
+
   def try_extract_location(bot, message)
     if message.location == nil
       @log_out.info("Unexpected message: #{message.inspect}")
@@ -125,41 +112,32 @@ class Bot
     end
     timezone = Timezone.lookup(message.location.latitude, message.location.longitude)
     timezone_name = timezone.name
-    @timezones.insert_conflict(:replace).insert(
-        :from_id => message.from.id,
-        :from_name => message.from.username,
-        :timezone => timezone_name
+    @user_info.register_user_timezone(
+        message.from.id,
+        message.from.username,
+        timezone_name
     )
     reply_and_clear_kb(bot, message,"Oki, tu zona horaria es #{timezone_name}.")
   end
 
-  def listi(bot, message)
-    if message.chat.type != "private"
-      reply(bot, message, "No sé de qué hablas <_<")
+  def mi_zona(bot, message)
+    user_info = @user_info.get_user_info(message.from.id)
+    if user_info == nil
+      reply(bot, message, "Bozzolo, no funciona")
       return
     end
-    reply_and_clear_kb(bot, message, "Bueni.")
-  end
-
-  def mi_zona(bot, message)
-    timezone = @timezones.first(:from_id => message.from.id)
+    timezone = user_info[:timezone]
     if timezone != nil
-      timezone_name = timezone[:timezone]
-      reply(bot, message, "Tu zona horaria es #{timezone_name}.")
+      reply(bot, message, "Tu zona horaria es #{timezone}.")
     else
       reply(bot, message, "No me has dicho dónde estás :(")
     end
   end
 
-  def olvidar_zona(bot, message)
-    @timezones.where(:from_id => message.from.id).delete
-    reply(bot, message, "Puchi :( Bueno ya, me olvidé de dónde estás.")
-  end
-
-  def olvidar_todo(bot, message)
-    @timezones.where(:from_id => message.from.id).delete
-    @chat_members.where(:from_id => message.from.id).delete
-    reply(bot, message, ":'(")
+  def olvidar(bot, message)
+    @user_info.remove_user_info(message.from.id)
+    @chat_info.remove_user_info(message.from.id)
+    reply(bot, message, "#{message.from.first_name}, rompiste mi corazoncito :'(")
   end
 
   def traducir_fecha(bot, message)
@@ -167,12 +145,12 @@ class Bot
       reply(bot, message, "Esto no es un grupo :/")
       return
     end
-    from_timezone_query = @timezones.first(:from_id => message.from.id)
-    if from_timezone_query == nil
-      reply(bot, message, "No sé dónde estás :( Dime /guardar_zona en privado primero.")
+    current_user_info = @user_info.get_user_info(message.from.id)
+    if current_user_info == nil
+      reply(bot, message, "Esto no debería pasar :S")
       return
     end
-    from_timezone_name = from_timezone_query[:timezone]
+    from_timezone_name = current_user_info[:timezone]
     if from_timezone_name == nil
       reply(bot, message, "No sé dónde estás :( Dime /guardar_zona en privado primero.")
       return
@@ -190,11 +168,11 @@ class Bot
       from_time_final = from_timezone.time_with_offset(Time.at(from_epoch))
     end
 
-    members_list = @chat_members.where(:chat_id => message.chat.id).map(:from_id)
-    translated_dates = @timezones.where(from_id: members_list).as_hash(:from_name, :timezone).map do |from_name, timezone|
-      to_timezone = Timezone.fetch(timezone)
+    members_list = @chat_info.get_known_chat_members(message.chat.id)
+    translated_dates = @user_info.get_users_info(members_list).map do |user_info|
+      to_timezone = Timezone.fetch(user_info[:timezone])
       translated_date = to_timezone.utc_to_local(from_time_final.to_datetime)
-      "#{from_name}: #{translated_date.strftime("%F %T")}"
+      "#{user_info[:from_name]}: #{translated_date.strftime("%F %T")}"
     end
     if translated_dates.empty?
       reply(bot, message, "Nadie me ha saludado en este grupo :(")

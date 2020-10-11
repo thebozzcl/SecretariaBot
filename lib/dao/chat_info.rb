@@ -1,8 +1,6 @@
 require 'zache'
 
 class ChatInfo
-  @chat_name_cache = Zache.new
-  @chat_name_cache_expiration = 3600
 
   def initialize (db)
     db.create_table? :chat_members do
@@ -11,10 +9,12 @@ class ChatInfo
       primary_key [:chat_id, :from_id], name: :id
     end
     @chat_members = db[:chat_members]
+    @chat_name_cache = Zache.new
+    @chat_name_cache_expiration = 3600
   end
 
-  def add_chat_member (from_id, chat_id)
-    if message.chat.type == "private"
+  def add_chat_member (chat_type, from_id, chat_id)
+    if chat_type == "private"
       return
     end
     @chat_members.insert_conflict(:replace).insert(
@@ -23,12 +23,8 @@ class ChatInfo
     )
   end
 
-  def remove_chat_member (from_id, chat_id)
-    if message.chat.type == "private"
-      return
-    end
+  def remove_user_info (from_id)
     @chat_members.where(
-      :chat_id => chat_id,
       :from_id => from_id
     ).delete
   end
@@ -41,10 +37,10 @@ class ChatInfo
     @chat_members.where(:from_id => from_id).map(:chat_id)
   end
 
-  def get_chat_name (chat_id, bot)
+  def get_chat_name (bot, chat_id)
     @chat_name_cache.get(chat_id, lifetime:  @chat_name_cache_expiration) do
-      chat = bot.get_chat(chat_id)
-      return chat == nil ? "Desconocido" : chat.name
+      chat = bot.api.get_chat(chat_id: chat_id)
+      return chat == nil ? "Desconocido" : chat['result']['title']
     end
   end
 end
