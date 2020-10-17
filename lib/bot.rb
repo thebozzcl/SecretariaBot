@@ -30,15 +30,7 @@ class Bot
           when Telegram::Bot::Types::Message
             command = (message.text == nil) ? nil : message.text.split(" ")[0]
             if command != '/olvidar'
-              user_name = if message.from.username != nil
-                            message.from.username
-                          elsif message.from.first_name != nil
-                            message.from.first_name
-                          elsif message.from.last_name != nil
-                            message.from.last_name
-                          else
-                            "El Usuario Sin Nombre (Bozzolo, no funciona)"
-                          end
+              user_name = get_user_name(message)
               @chat_info.add_chat_member(message.chat.type, message.from.id, message.chat.id)
               @user_info.register_user_info(message.from.id, user_name)
             end
@@ -121,9 +113,10 @@ class Bot
     end
     timezone = Timezone.lookup(message.location.latitude, message.location.longitude)
     timezone_name = timezone.name
+    user_name = get_user_name(message)
     @user_info.register_user_timezone(
         message.from.id,
-        message.from.username,
+        user_name,
         timezone_name
     )
     reply_and_clear_kb(bot, message,"Oki, tu zona horaria es #{timezone_name}.")
@@ -231,6 +224,18 @@ class Bot
         @user_info.remove_user_info(message.from.id)
         @chat_info.remove_user_info(message.from.id)
       end
+    end
+  end
+
+  def get_user_name(message)
+    if message.from.username != nil
+      message.from.username
+    elsif message.from.first_name != nil
+      message.from.first_name
+    elsif message.from.last_name != nil
+      message.from.last_name
+    else
+      "El Usuario Sin Nombre (Bozzolo, no funciona)"
     end
   end
 end
