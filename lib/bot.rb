@@ -30,8 +30,17 @@ class Bot
           when Telegram::Bot::Types::Message
             command = (message.text == nil) ? nil : message.text.split(" ")[0]
             if command != '/olvidar'
+              user_name = if message.from.username != nil
+                            message.from.username
+                          elsif message.from.first_name != nil
+                            message.from.first_name
+                          elsif message.from.last_name != nil
+                            message.from.last_name
+                          else
+                            "El Usuario Sin Nombre (Bozzolo, no funciona)"
+                          end
               @chat_info.add_chat_member(message.chat.type, message.from.id, message.chat.id)
-              @user_info.register_user_info(message.from.id, message.from.username)
+              @user_info.register_user_info(message.from.id, user_name)
             end
             case command
             when '/start', '/ayuda'
@@ -123,7 +132,7 @@ class Bot
   def mi_zona(bot, message)
     user_info = @user_info.get_user_info(message.from.id)
     if user_info == nil
-      reply(bot, message, "Bozzolo, no funciona")
+      reply(bot, message, "Dile a @TheBozzUS 'Bozzolo, no funciona'")
       return
     end
     timezone = user_info[:timezone]
@@ -147,7 +156,7 @@ class Bot
     end
     current_user_info = @user_info.get_user_info(message.from.id)
     if current_user_info == nil
-      reply(bot, message, "Esto no debería pasar :S")
+      reply(bot, message, "Dile a @TheBozzUS 'Bozzolo, no funciona'")
       return
     end
     from_timezone_name = current_user_info[:timezone]
