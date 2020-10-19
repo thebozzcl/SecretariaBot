@@ -16,10 +16,11 @@ class Bot
       • /start o /ayuda para ver este mensaje
       • /holi o /holo
       • /mis_grupos
-      • /guardar_zona (/mejor_no para cancelar)
+      • /guardar_zona (/mejor_no para cancelar) (sólo funciona en chats privados por temas de privacidad)
       • /mi_zona
       • /olvidar
-      • /traducir_fecha [fecha y hora local]"
+      • /traducir_fecha [fecha y hora local]
+    Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles sobre cómo me mataste, por favor)."
 
     Telegram::Bot::Client.run(bot_token) do |bot|
       bot.listen do |message|
@@ -47,9 +48,13 @@ class Bot
       when '/mis_grupos'
         reply(bot, message, @user_info_handler.get_user_groups(bot, message))
       when '/guardar_zona'
-        @timezone_handler.request_location(bot, message)
+        if require_private_chat(bot, message)
+          @timezone_handler.request_location(bot, message)
+        end
       when '/mejor_no'
-        reply_and_clear_kb(bot, message, "Bueni.")
+        if require_private_chat(bot, message)
+          reply_and_clear_kb(bot, message, "Bueni.")
+        end
       when '/mi_zona'
         reply(bot, message, @user_info_handler.get_user_timezone(message))
       when '/olvidar'
@@ -81,6 +86,14 @@ class Bot
         @log_out.info("Unexpected error: #{error}")
       end
     end
+  end
+
+  def require_private_chat(bot, message)
+    if message.chat.type != "private"
+      reply(bot, message, "Nu, me da vergüenza >_< Háblame en privado.")
+      return false
+    end
+    return true
   end
 
   def reply_and_clear_kb(bot, message, text)
