@@ -12,15 +12,17 @@ class Bot
     @user_info_handler = user_info_handler
     @timezone_handler = timezone_handler
 
-    @commands = "Puedes decirme:
-      • /start o /ayuda para ver este mensaje
-      • /holi o /holo
-      • /mis_grupos
-      • /guardar_zona (/mejor_no para cancelar) (sólo funciona en chats privados por temas de privacidad)
-      • /mi_zona
-      • /olvidar
-      • /traducir_fecha [fecha y hora local]
-    Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles sobre cómo me mataste, por favor)."
+    @commands =
+"Puedes decirme:
+  • /start o /ayuda para ver este mensaje
+  • /holi o /holo
+  • /mis_grupos
+  • /guardar_zona (/mejor_no para cancelar) (sólo funciona en chats privados por temas de privacidad)
+  • /mi_zona
+  • /olvidar
+  • /traducir_fecha [fecha y hora local]
+
+Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles sobre cómo me mataste, por favor)."
 
     Telegram::Bot::Client.run(bot_token) do |bot|
       bot.listen do |message|
