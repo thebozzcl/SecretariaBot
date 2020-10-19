@@ -60,11 +60,15 @@ class TimezoneHandler
     if command_and_args.length < 2
       from_time_final = Time.now.utc
     else
+      begin
       from_time_base = Time.parse("#{command_and_args[1]} UTC")
       from_dst_offset = from_timezone.dst?(from_time_base) ? 0 : 3600
       from_timezone_offset = from_timezone.utc_offset(Time.now)
       from_epoch = from_time_base.to_i - from_timezone_offset + from_dst_offset
       from_time_final = from_timezone.time_with_offset(Time.at(from_epoch))
+      rescue
+        return "No pude entender lo que me dijiste :( ¿Estás seguro(a) de que me pasaste una fecha y hora válidas? Un ejemplo: '/traducir_fecha 2020-01-01 09:00'"
+      end
     end
 
     members_list = @chat_info.get_known_chat_members(message.chat.id)

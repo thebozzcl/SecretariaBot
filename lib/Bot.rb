@@ -20,7 +20,7 @@ class Bot
   • /guardar_zona (/mejor_no para cancelar) (sólo funciona en chats privados por temas de privacidad)
   • /mi_zona
   • /olvidar
-  • /traducir_fecha [fecha y hora local]
+  • /traducir_fecha [fecha y hora local, opcional]
 
 Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles sobre cómo me mataste, por favor)."
 
