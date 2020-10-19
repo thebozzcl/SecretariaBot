@@ -42,7 +42,7 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
 
     case message
     when Telegram::Bot::Types::Message
-      command = (message.text == nil) ? nil : message.text.split(" ")[0]
+      command = (message.text == nil) ? nil : message.text.gsub("@nombri_mcnombrebot", "").split(" ")[0]
       if command != '/olvidar'
         @user_info_handler.register_user(message)
       end
