@@ -20,7 +20,11 @@ class Bot
   • /guardar_zona (/mejor_no para cancelar) (sólo funciona en chats privados por temas de privacidad)
   • /mi_zona
   • /olvidar
-  • /traducir_fecha [fecha y hora local, opcional]
+  • /traducir_fecha [fecha y hora local, opcional]. Puedo traducir varios formatos... algunos ejemplos:
+    • /traducir_fecha 2020-05-06 13:14:15
+    • /traducir_fecha 15 octubre 2016
+    • /traducir_fecha 5 PM
+    • /traducir_fecha (si no me das una fecha, asumo que quieres la fecha actual)
 
 Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles sobre cómo me mataste, por favor)."
 
