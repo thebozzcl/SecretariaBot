@@ -1,6 +1,8 @@
-require_relative './lib/bot.rb'
-require_relative './lib/dao/user_info.rb'
-require_relative './lib/dao/chat_info.rb'
+require_relative './lib/Bot.rb'
+require_relative './lib/dao/UserInfo.rb'
+require_relative './lib/dao/ChatInfo.rb'
+require_relative './lib/UserInfoHandler.rb'
+require_relative './lib/TimezoneHandler.rb'
 require 'logger'
 require 'sequel'
 
@@ -19,8 +21,11 @@ db = Sequel.sqlite("./secretariabot.db")
 chat_info = ChatInfo.new(db)
 user_info = UserInfo.new(db)
 
+user_info_handler = UserInfoHandler.new(user_info, chat_info)
+timezone_handler = TimezoneHandler.new(log_out, user_info, chat_info, user_info_handler, geonames_username)
+
 Timezone::Lookup.config(:geonames) do |c|
   c.username = geonames_username
 end
 
-Bot.new(bot_token, geonames_username, chat_info, user_info, log_out)
+Bot.new(bot_token, user_info_handler, timezone_handler, log_out)

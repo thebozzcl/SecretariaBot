@@ -1,0 +1,103 @@
+require 'telegram/bot'
+
+class Bot
+
+  def initialize (
+      bot_token,
+      user_info_handler,
+      timezone_handler,
+      log_out
+  )
+    @log_out = log_out
+    @user_info_handler = user_info_handler
+    @timezone_handler = timezone_handler
+
+    @commands = "Puedes decirme:
+      • /start o /ayuda para ver este mensaje
+      • /holi o /holo
+      • /mis_grupos
+      • /guardar_zona (/mejor_no para cancelar)
+      • /mi_zona
+      • /olvidar
+      • /traducir_fecha [fecha y hora local]"
+
+    Telegram::Bot::Client.run(bot_token) do |bot|
+      bot.listen do |message|
+        process_message(bot, message)
+      end
+    end
+  end
+
+  def process_message(bot, message)
+    if message.from.is_bot
+      return
+    end
+
+    case message
+    when Telegram::Bot::Types::Message
+      command = (message.text == nil) ? nil : message.text.split(" ")[0]
+      if command != '/olvidar'
+        @user_info_handler.register_user(message)
+      end
+      case command
+      when '/start', '/ayuda'
+        reply(bot, message, @commands)
+      when '/holi', '/holo'
+        reply(bot, message, "Holi, #{message.from.first_name}.")
+      when '/mis_grupos'
+        reply(bot, message, @user_info_handler.get_user_groups(bot, message))
+      when '/guardar_zona'
+        @timezone_handler.request_location(bot, message)
+      when '/mejor_no'
+        reply_and_clear_kb(bot, message, "Bueni.")
+      when '/mi_zona'
+        reply(bot, message, @user_info_handler.get_user_timezone(message))
+      when '/olvidar'
+        reply(bot, message, @user_info_handler.clear_data(message))
+      when '/traducir_fecha'
+        reply(bot, message, @timezone_handler.translate_date(message))
+      when nil
+        reply(bot, message, @timezone_handler.try_extract_location(message))
+      else
+        @log_out.info("Unexpected message: #{message.inspect}")
+      end
+    else
+      @log_out.info("Unexpected message type: #{message.inspect}")
+    end
+  end
+
+  def reply(bot, message, text)
+    begin
+      bot.api.send_message(
+          chat_id: message.chat.id,
+          reply_to_message_id: message.message_id,
+          text: text
+      )
+    rescue => error
+      case error.error_code
+      when "403" # Blocked
+        @user_info_handler.clear_data(message)
+      else
+        @log_out.info("Unexpected error: #{error}")
+      end
+    end
+  end
+
+  def reply_and_clear_kb(bot, message, text)
+    begin
+      kb = Telegram::Bot::Types::ReplyKeyboardRemove.new(remove_keyboard: true)
+      bot.api.send_message(
+          chat_id: message.chat.id,
+          reply_to_message_id: message.message_id,
+          text: text, reply_markup: kb
+      )
+    rescue => error
+      case error.error_code
+      when "403" # Blocked
+        @user_info_handler.clear_data(message)
+      else
+        @log_out.info("Unexpected error: #{error}")
+      end
+    end
+  end
+end
