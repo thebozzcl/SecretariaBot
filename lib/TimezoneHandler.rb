@@ -56,18 +56,20 @@ class TimezoneHandler
     end
     from_timezone = Timezone.fetch(from_timezone_name)
 
+    current_time_at_user = from_timezone.time_with_offset(Time.now)
+    from_timezone_offset = from_timezone.utc_offset(current_time_at_user)
+
     command_and_args = message.text.split(" ", 2)
     if command_and_args.length < 2
       from_time_final = Time.now.utc
     else
       begin
-      from_time_base = Time.parse("#{command_and_args[1]} UTC")
+      from_time_base = Time.parse("#{command_and_args[1]} UTC", current_time_at_user)
       from_dst_offset = from_timezone.dst?(from_time_base) ? 0 : 3600
-      from_timezone_offset = from_timezone.utc_offset(Time.now)
       from_epoch = from_time_base.to_i - from_timezone_offset + from_dst_offset
       from_time_final = from_timezone.time_with_offset(Time.at(from_epoch))
       rescue
-        return "No pude entender lo que me dijiste :( ¿Estás seguro(a) de que me pasaste una fecha y hora válidas? Un ejemplo: '/traducir_fecha 2020-01-01 09:00'"
+        return "No pude entender lo que me dijiste :( ¿Me pasaste una fecha y hora válidas? Dime /ayuda para ver ejemplos.'"
       end
     end
 
