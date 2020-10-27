@@ -71,6 +71,7 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
         reply(bot, message, @timezone_handler.try_extract_location(message))
       else
         @log_out.info("Unexpected message: #{message.inspect}")
+        reply(bot, message, "No sé cómo ayudarte con eso :/ " + @commands)
       end
     else
       @log_out.info("Unexpected message type: #{message.inspect}")
@@ -96,8 +97,9 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
 
   def require_private_chat(bot, message)
     if message.chat.type != "private"
-      reply(bot, message, "Nu, me da vergüenza >_< Háblame en privado.")
       return false
+      #reply(bot, message, "Nu, me da vergüenza >_< Háblame en privado.")
+      #return false
     end
     return true
   end
@@ -105,6 +107,7 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
   def reply_and_clear_kb(bot, message, text)
     begin
       kb = Telegram::Bot::Types::ReplyKeyboardRemove.new(remove_keyboard: true)
+      return
       bot.api.send_message(
           chat_id: message.chat.id,
           reply_to_message_id: message.message_id,
