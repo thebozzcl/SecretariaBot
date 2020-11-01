@@ -56,8 +56,6 @@ class TimezoneHandler
     end
     from_timezone = Timezone.fetch(from_timezone_name)
 
-    current_time_at_user = from_timezone.time_with_offset(Time.now)
-
     command_and_args = message.text.split(" ", 2)
     if command_and_args.length < 2
       from_time_utc = Time.now.utc
@@ -70,21 +68,21 @@ class TimezoneHandler
     end
 
     members_list = @chat_info.get_known_chat_members(message.chat.id)
-    translated_dates = @user_info.get_users_info(members_list).map do |user_info|
+    translated_dates = Hash[@user_info.get_users_info(members_list).map do |user_info|
       user_timezone_name = user_info[:timezone]
       if user_timezone_name == nil
-        "#{user_info[:from_name]}: No sé :("
+        [Timezone.fetch("UTC"), "#{user_info[:from_name]}: No sé :("]
       else
         to_timezone = Timezone.fetch(user_timezone_name)
         translated_date = to_timezone.utc_to_local(from_time_utc)
-        "#{user_info[:from_name]}: #{translated_date.strftime("%F %T")}"
+        [to_timezone, "#{user_info[:from_name]}: #{translated_date.strftime("%F %T")}"]
       end
-    end
-    if translated_dates.empty?
+    end]
+    if translated_dates.values.empty?
       return "Nadie me ha saludado en este grupo :("
     end
 
-    translated_dates_string = translated_dates.join("\n• ")
+    translated_dates_string = translated_dates.sort.to_h.values.join("\n• ")
     return "• #{translated_dates_string}"
   end
 end
