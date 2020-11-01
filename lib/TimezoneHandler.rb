@@ -57,17 +57,13 @@ class TimezoneHandler
     from_timezone = Timezone.fetch(from_timezone_name)
 
     current_time_at_user = from_timezone.time_with_offset(Time.now)
-    from_timezone_offset = from_timezone.utc_offset(current_time_at_user)
 
     command_and_args = message.text.split(" ", 2)
     if command_and_args.length < 2
-      from_time_final = Time.now.utc
+      from_time_utc = Time.now.utc
     else
       begin
-      from_time_base = Time.parse("#{command_and_args[1]} UTC", current_time_at_user)
-      from_dst_offset = from_timezone.dst?(from_time_base) ? 0 : 3600
-      from_epoch = from_time_base.to_i - from_timezone_offset + from_dst_offset
-      from_time_final = from_timezone.time_with_offset(Time.at(from_epoch))
+        from_time_utc = Time.parse("#{command_and_args[1]} #{from_timezone.abbr(Time.now)}").utc
       rescue
         return "No pude entender lo que me dijiste :( ¿Me pasaste una fecha y hora válidas? Dime /ayuda para ver ejemplos.'"
       end
@@ -80,7 +76,7 @@ class TimezoneHandler
         "#{user_info[:from_name]}: No sé :("
       else
         to_timezone = Timezone.fetch(user_timezone_name)
-        translated_date = to_timezone.utc_to_local(from_time_final.to_datetime)
+        translated_date = to_timezone.utc_to_local(from_time_utc)
         "#{user_info[:from_name]}: #{translated_date.strftime("%F %T")}"
       end
     end
