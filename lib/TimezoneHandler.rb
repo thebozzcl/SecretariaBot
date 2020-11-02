@@ -71,11 +71,11 @@ class TimezoneHandler
     translated_dates = Hash[@user_info.get_users_info(members_list).map do |user_info|
       user_timezone_name = user_info[:timezone]
       if user_timezone_name == nil
-        [Timezone.fetch("UTC"), "#{user_info[:from_name]}: No sé :("]
+        [999, "#{user_info[:from_name]}: No sé :("]
       else
         to_timezone = Timezone.fetch(user_timezone_name)
         translated_date = to_timezone.utc_to_local(from_time_utc)
-        [to_timezone, "#{user_info[:from_name]}: #{translated_date.strftime("%F %T")}"]
+        [translated_date.hour, "#{user_info[:from_name]}: #{translated_date.strftime("%a %F %T")}"]
       end
     end]
     if translated_dates.values.empty?
