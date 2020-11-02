@@ -42,7 +42,7 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
 
     case message
     when Telegram::Bot::Types::Message
-      if %w[2730793 13820710 25198635 199948 13076441 82352130].include? message.from.id
+      if [2730793, 13820710, 25198635, 199948, 13076441, 82352130].include? message.from.id
         reply(bot, message, "¡Gracias por usar la versión de prueba de SecretariaBot! Tu periodo de prueba ha
 terminado; para seguir usando este bot, por favor deposítale US$69.00 a @TheBozzUS.")
         return
