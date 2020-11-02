@@ -75,7 +75,8 @@ class TimezoneHandler
       else
         to_timezone = Timezone.fetch(user_timezone_name)
         translated_date = to_timezone.utc_to_local(from_time_utc)
-        [translated_date.hour, "#{user_info[:from_name]}: #{translated_date.strftime("%a %F %T")}"]
+        from_name = user_info[:from_name]
+        ["#{translated_date.hour}-#{from_name}", "#{from_name}: #{translated_date.strftime("%a %F %T")}"]
       end
     end]
     if translated_dates.values.empty?
