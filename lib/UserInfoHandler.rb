@@ -16,35 +16,31 @@ class UserInfoHandler
 
   def get_user_groups(bot, message)
     chat_ids = @chat_info.get_known_chats_for_user(message.from.id)
-    if chat_ids.empty?
-      return "No me has hablado en ningún grupo :("
-    end
+    return 'No me has hablado en ningún grupo :(' if chat_ids.empty?
 
     chat_names = chat_ids.map do |chat_id|
       get_chat_name(bot, chat_id)
     end.to_a
     chat_names_string = chat_names.join("\n• ")
-    return "Tus grupos son:\n• #{chat_names_string}"
+
+    "Tus grupos son:\n• #{chat_names_string}"
   end
 
   def get_user_timezone(message)
     user_info = @user_info.get_user_info(message.from.id)
-    if user_info == nil
-      return "Dile a @TheBozzUS 'Bozzolo, no funciona'"
-      return
-    end
+    return "Dile a @TheBozzUS 'Bozzolo, no funciona'" if user_info.nil?
     timezone = user_info[:timezone]
     if timezone != nil
-      return "Tu zona horaria es #{timezone}."
+      "Tu zona horaria es #{timezone}."
     else
-      return "No me has dicho dónde estás :("
+      'No me has dicho dónde estás :('
     end
   end
 
   def clear_data(message)
     @user_info.remove_user_info(message.from.id)
     @chat_info.remove_user_info(message.from.id)
-    return "#{message.from.first_name}, rompiste mi corazoncito :'("
+    "#{message.from.first_name}, rompiste mi corazoncito :'("
   end
 
   def get_username(message)
@@ -55,14 +51,14 @@ class UserInfoHandler
     elsif message.from.last_name != nil
       message.from.last_name
     else
-      "El Usuario Sin Nombre (Bozzolo, no funciona)"
+      'El Usuario Sin Nombre (Bozzolo, no funciona)'
     end
   end
 
   def get_chat_name(bot, chat_id)
     @chat_name_cache.get(chat_id, lifetime:  @chat_name_cache_expiration) do
       chat = bot.api.get_chat(chat_id: chat_id)
-      return chat == nil ? "Desconocido" : chat['result']['title']
+      return chat.nil? ? 'Desconocido' : chat['result']['title']
     end
   end
 end

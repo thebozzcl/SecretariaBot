@@ -10,9 +10,8 @@ class ChatInfo
   end
 
   def add_chat_member (chat_type, from_id, chat_id)
-    if chat_type == "private"
-      return
-    end
+    return if chat_type == 'private'
+
     @chat_members.insert_conflict(:replace).insert(
       :chat_id => chat_id,
       :from_id => from_id

@@ -13,18 +13,20 @@ class Bot
     @timezone_handler = timezone_handler
 
     @commands =
-"Puedes decirme:
+      "Estas son las funciones que soporto:
+1. Háblame en un chat grupal para que sepa que estás ahí:
   • /start o /ayuda para ver este mensaje
   • /holi o /holo
   • /mis_grupos
-  • /guardar_zona (/mejor_no para cancelar) (sólo funciona en chats privados por temas de privacidad)
   • /mi_zona
-  • /olvidar
-  • /traducir_fecha [fecha y hora local, opcional]. Puedo traducir varios formatos... algunos ejemplos:
-    • /traducir_fecha 2020-05-06 13:14:15
-    • /traducir_fecha 15 octubre 2016
-    • /traducir_fecha 5 PM
-    • /traducir_fecha (si no me das una fecha, asumo que quieres la fecha actual)
+  • Todos los otros comandos sirven también, excepto /olvidar... pero no van a hacer nada :P
+2. Para registrar tu zona horaria, dime /guardar_zona (/mejor_no para cancelar). Esto sólo funciona en el chat privado conmigo.
+3. Para coordinar eventos en un chat grupal, dime /traducir_fecha [fecha y hora local, opcional]. Puedo traducir varios formatos... algunos ejemplos:
+  • /traducir_fecha 2020-05-06 13:14:15
+  • /traducir_fecha 15 octubre 2016
+  • /traducir_fecha 5 PM
+  • /traducir_fecha (si no me das una fecha, asumo que quieres la fecha actual)
+4. Para borrar tus datos ( :( ), dime /olvidar
 
 Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles sobre cómo me mataste, por favor)."
 
@@ -36,16 +38,12 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
   end
 
   def process_message(bot, message)
-    if message.from.is_bot
-      return
-    end
+    return if message.from.is_bot
 
     case message
     when Telegram::Bot::Types::Message
-      command = (message.text == nil) ? nil : message.text.gsub("@nombri_mcnombrebot", "").split(" ")[0]
-      if command != '/olvidar'
-        @user_info_handler.register_user(message)
-      end
+      command = message.text.nil? ? nil : message.text.gsub('@nombri_mcnombrebot', '').split(' ')[0]
+      @user_info_handler.register_user(message) if command != '/olvidar'
       case command
       when '/start', '/ayuda'
         reply(bot, message, @commands)
@@ -54,13 +52,9 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
       when '/mis_grupos'
         reply(bot, message, @user_info_handler.get_user_groups(bot, message))
       when '/guardar_zona'
-        if require_private_chat(bot, message)
-          @timezone_handler.request_location(bot, message)
-        end
+        @timezone_handler.request_location(bot, message) if require_private_chat(bot, message)
       when '/mejor_no'
-        if require_private_chat(bot, message)
-          reply_and_clear_kb(bot, message, "Bueni.")
-        end
+        reply_and_clear_kb(bot, message, 'Bueni.') if require_private_chat(bot, message)
       when '/mi_zona'
         reply(bot, message, @user_info_handler.get_user_timezone(message))
       when '/olvidar'
@@ -71,7 +65,7 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
         reply(bot, message, @timezone_handler.try_extract_location(message))
       else
         @log_out.info("Unexpected message: #{message.inspect}")
-        reply(bot, message, "No sé cómo ayudarte con eso :/ " + @commands)
+        reply(bot, message, 'No sé cómo ayudarte con eso :/ ' + @commands)
       end
     else
       @log_out.info("Unexpected message type: #{message.inspect}")
@@ -81,13 +75,13 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
   def reply(bot, message, text)
     begin
       bot.api.send_message(
-          chat_id: message.chat.id,
-          reply_to_message_id: message.message_id,
-          text: text
+        chat_id: message.chat.id,
+        reply_to_message_id: message.message_id,
+        text: text
       )
     rescue => error
       case error.error_code
-      when "403" # Blocked
+      when '403' # Blocked
         @user_info_handler.clear_data(message)
       else
         @log_out.info("Unexpected error: #{error}")
@@ -96,10 +90,9 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
   end
 
   def require_private_chat(bot, message)
-    if message.chat.type != "private"
+    if message.chat.type != 'private'
+      reply(bot, message, 'Nu, me da vergüenza >_< Háblame en privado.')
       return false
-      #reply(bot, message, "Nu, me da vergüenza >_< Háblame en privado.")
-      #return false
     end
     return true
   end
@@ -107,15 +100,14 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
   def reply_and_clear_kb(bot, message, text)
     begin
       kb = Telegram::Bot::Types::ReplyKeyboardRemove.new(remove_keyboard: true)
-      return
       bot.api.send_message(
-          chat_id: message.chat.id,
-          reply_to_message_id: message.message_id,
-          text: text, reply_markup: kb
+        chat_id: message.chat.id,
+        reply_to_message_id: message.message_id,
+        text: text, reply_markup: kb
       )
     rescue => error
       case error.error_code
-      when "403" # Blocked
+      when '403' # Blocked
         @user_info_handler.clear_data(message)
       else
         @log_out.info("Unexpected error: #{error}")
