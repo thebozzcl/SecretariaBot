@@ -70,9 +70,6 @@ class TimezoneHandler
     members_list = @chat_info.get_known_chat_members(message.chat.id)
     translated_dates = Hash[@user_info.get_users_info(members_list).map do |user_info|
       user_timezone_name = user_info[:timezone]
-      if [2730793, 13820710, 25198635, 199948, 13076441, 82352130].include? message.from.id
-        ["999999999999999", "#{user_info[:from_name]}: Periodo de prueba expirado"]
-      end
       if user_timezone_name == nil
         ["999999999999999", "#{user_info[:from_name]}: No sé :("]
       else
