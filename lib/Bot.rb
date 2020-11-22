@@ -50,7 +50,7 @@ Si tienes preguntas, necesitas ayuda o si me matas accidentalmente （◞‸◟�
       when '/start', '/ayuda'
         reply(bot, message, @commands)
       when '/holi', '/holo'
-        reply(bot, message, "Holi, #{message.from.first_name}.")
+        reply(bot, message, "Holi, #{message.from.first_name} (✿╹◡╹)")
       when '/mis_grupos'
         reply(bot, message, @user_info_handler.get_user_groups(bot, message))
       when '/guardar_zona'
