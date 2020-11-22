@@ -65,7 +65,7 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
         reply(bot, message, @timezone_handler.try_extract_location(message))
       else
         @log_out.info("Unexpected message: #{message.inspect}")
-        reply(bot, message, 'No sé cómo ayudarte con eso :/ ' + @commands) unless message.reply_to_message.nil?
+        reply(bot, message, 'No sé cómo ayudarte con eso :/ ' + @commands) if message.reply_to_message.nil?
       end
     else
       @log_out.info("Unexpected message type: #{message.inspect}")
