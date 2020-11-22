@@ -16,7 +16,7 @@ class UserInfoHandler
 
   def get_user_groups(bot, message)
     chat_ids = @chat_info.get_known_chats_for_user(message.from.id)
-    return 'No me has hablado en ningún grupo :(' if chat_ids.empty?
+    return 'No me has hablado en ningún grupo ┐(‘～`;)┌' if chat_ids.empty?
 
     chat_names = chat_ids.map do |chat_id|
       get_chat_name(bot, chat_id)
@@ -33,14 +33,14 @@ class UserInfoHandler
     if timezone != nil
       "Tu zona horaria es #{timezone}."
     else
-      'No me has dicho dónde estás :('
+      'No me has dicho dónde estás （；^ω^）'
     end
   end
 
   def clear_data(message)
     @user_info.remove_user_info(message.from.id)
     @chat_info.remove_user_info(message.from.id)
-    "#{message.from.first_name}, rompiste mi corazoncito :'("
+    "#{message.from.first_name}, rompiste mi corazoncito (╥﹏╥)"
   end
 
   def get_username(message)
@@ -51,7 +51,7 @@ class UserInfoHandler
     elsif message.from.last_name != nil
       message.from.last_name
     else
-      'El Usuario Sin Nombre (Bozzolo, no funciona)'
+      "El Usuario Sin Nombre (Dile a @TheBozzUS 'Bozzolo, no funciona')"
     end
   end
 

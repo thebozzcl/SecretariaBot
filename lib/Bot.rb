@@ -19,16 +19,18 @@ class Bot
   • /holi o /holo
   • /mis_grupos
   • /mi_zona
-  • Todos los otros comandos sirven también, excepto /olvidar... pero no van a hacer nada :P
+  • Todos los otros comandos sirven también, excepto /olvidar
 2. Para registrar tu zona horaria, dime /guardar_zona (/mejor_no para cancelar). Esto sólo funciona en el chat privado conmigo.
-3. Para coordinar eventos en un chat grupal, dime /traducir_fecha [fecha y hora local, opcional]. Puedo traducir varios formatos... algunos ejemplos:
+3. Para coordinar eventos en un chat grupal, dime /traducir_fecha [fecha y hora local, opcional]. Puedo traducir varios formatos. Algunos ejemplos:
   • /traducir_fecha 2020-05-06 13:14:15
   • /traducir_fecha 15 octubre 2016
   • /traducir_fecha 5 PM
   • /traducir_fecha (si no me das una fecha, asumo que quieres la fecha actual)
-4. Para borrar tus datos ( :( ), dime /olvidar
+4. Para borrar tus datos (ಥ﹏ಥ), dime /olvidar
 
-Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles sobre cómo me mataste, por favor)."
+Si quieres saber cómo funciono, o si quieres copiar mi código (*≧∀≦*), puedes encontrarlo aquí: https://github.com/thebozzcl/SecretariaBot
+
+Si tienes preguntas, necesitas ayuda o si me matas accidentalmente （◞‸◟）, mándale un mensaje a @TheBozzUS diciendo 'Bozzolo, no funciona'."
 
     Telegram::Bot::Client.run(bot_token) do |bot|
       bot.listen do |message|
@@ -54,7 +56,7 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
       when '/guardar_zona'
         @timezone_handler.request_location(bot, message) if require_private_chat(bot, message)
       when '/mejor_no'
-        reply_and_clear_kb(bot, message, 'Bueni.') if require_private_chat(bot, message)
+        reply_and_clear_kb(bot, message, 'Bueni ┐(´д`)┌ ') if require_private_chat(bot, message)
       when '/mi_zona'
         reply(bot, message, @user_info_handler.get_user_timezone(message))
       when '/olvidar'
@@ -65,7 +67,7 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
         reply(bot, message, @timezone_handler.try_extract_location(message))
       else
         @log_out.info("Unexpected message: #{message.inspect}")
-        reply(bot, message, 'No sé cómo ayudarte con eso :/ ' + @commands) if message.reply_to_message.nil?
+        reply(bot, message, 'No sé cómo ayudarte con eso (・∧‐)ゞ .' + @commands) if message.reply_to_message.nil?
       end
     else
       @log_out.info("Unexpected message type: #{message.inspect}")
@@ -91,7 +93,7 @@ Si tienes problemas, dile a @TheBozzUS 'Bozzolo, no funciona' (pero con detalles
 
   def require_private_chat(bot, message)
     if message.chat.type != 'private'
-      reply(bot, message, 'Nu, me da vergüenza >_< Háblame en privado.')
+      reply(bot, message, 'Nu, me da vergüenza (ꈍ▽ꈍ) Háblame en privado.')
       return false
     end
     return true

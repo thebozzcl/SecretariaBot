@@ -22,7 +22,7 @@ class TimezoneHandler
     bot.api.send_message(
       chat_id: message.chat.id,
       reply_to_message_id: message.message_id,
-      text: 'Para guardar tu zona horaria, necesito ver tu ubicación.',
+      text: 'Para guardar tu zona horaria, necesito ver tu ubicación (*≖ᴗ≖*✿)',
       reply_markup: markup
     )
   end
@@ -40,13 +40,13 @@ class TimezoneHandler
   end
 
   def translate_date(message)
-    return 'Esto no es un grupo :/' if message.chat.type == 'private'
+    return 'Esto no es un grupo (ఠ ͟ ಠ)' if message.chat.type == 'private'
 
     current_user_info = @user_info.get_user_info(message.from.id)
     return "Dile a @TheBozzUS 'Bozzolo, no funciona'" if current_user_info.nil?
 
     from_timezone_name = current_user_info[:timezone]
-    return 'No sé dónde estás :( Dime /guardar_zona en privado primero.' if from_timezone_name.nil?
+    return 'No sé dónde estás (⋟﹏⋞) Dime /guardar_zona en privado primero.' if from_timezone_name.nil?
 
     from_timezone = Timezone.fetch(from_timezone_name)
 
@@ -57,13 +57,13 @@ class TimezoneHandler
       begin
         from_time_utc = Time.parse("#{command_and_args[1]} #{from_timezone.abbr(Time.now)}").utc
       rescue
-        return "No pude entender lo que me dijiste :( ¿Me pasaste una fecha y hora válidas? Dime /ayuda para ver ejemplos.'"
+        return "No pude entender lo que me dijiste (⊙_☉) ¿Me pasaste una fecha y hora válidas? Dime /ayuda para ver ejemplos.'"
       end
     end
 
     members_list = @chat_info.get_known_chat_members(message.chat.id)
     users_info = @user_info.get_users_info(members_list)
-    unknown_date_key = DateKey.new('No sé :( ', 99_999)
+    unknown_date_key = DateKey.new('No sé (T⌓T) ', 99_999)
     translated_dates = Hash[users_info.map do |user_info|
       user_timezone_name = user_info[:timezone]
       if user_timezone_name.nil?
@@ -74,7 +74,7 @@ class TimezoneHandler
         [user_info[:from_name].to_s, DateKey.new(translated_date.strftime('%a %F %T'), translated_date.hour)]
       end
     end]
-    return 'Nadie me ha saludado en este grupo :(' if translated_dates.values.empty?
+    return 'Nadie me ha saludado en este grupo （；・д・）' if translated_dates.values.empty?
 
     reversed_translated_dates = {}
     translated_dates.each do |user_name, date|
