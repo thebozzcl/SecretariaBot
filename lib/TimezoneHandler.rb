@@ -1,5 +1,6 @@
 require 'timezone'
 require 'time'
+require_relative './model/DateKey'
 
 class TimezoneHandler
   def initialize(log_out, user_info, chat_info, user_info_handler, geonames_username)
@@ -61,18 +62,19 @@ class TimezoneHandler
     end
 
     members_list = @chat_info.get_known_chat_members(message.chat.id)
-    unknown_zone_users = []
-    translated_dates = Hash[@user_info.get_users_info(members_list).map do |user_info|
+    users_info = @user_info.get_users_info(members_list)
+    unknown_date_key = DateKey.new('No sé :( ', 99_999)
+    translated_dates = Hash[users_info.map do |user_info|
       user_timezone_name = user_info[:timezone]
       if user_timezone_name.nil?
-        unknown_zone_users.append((user_info[:from_name]).to_s)
+        [user_info[:from_name].to_s, unknown_date_key]
       else
         to_timezone = Timezone.fetch(user_timezone_name)
         translated_date = to_timezone.utc_to_local(from_time_utc)
-        [user_info[:from_name].to_s, translated_date.strftime('%a %F %T')]
+        [user_info[:from_name].to_s, DateKey.new(translated_date.strftime('%a %F %T'), translated_date.hour)]
       end
     end]
-    return 'Nadie me ha saludado en este grupo :(' if translated_dates.values.empty? && unknown_zone_users.empty?
+    return 'Nadie me ha saludado en este grupo :(' if translated_dates.values.empty?
 
     reversed_translated_dates = {}
     translated_dates.each do |user_name, date|
@@ -83,11 +85,8 @@ class TimezoneHandler
       end
     end
 
-    translated_dates_strings = reversed_translated_dates.sort.to_h.map do |date, user_names|
-      "#{date}: #{user_names.join(', ')}"
-    end
-    unless unknown_zone_users.empty?
-      translated_dates_strings.append("No sé :( : #{unknown_zone_users.join(', ')}")
+    translated_dates_strings = reversed_translated_dates.sort_by{|date, _| date.hour}.to_h.map do |date, user_names|
+      "#{date.date_str}: #{user_names.join(', ')}"
     end
 
     "• #{translated_dates_strings.join("\n• ")}"
