@@ -15,17 +15,17 @@ class Bot
     @commands =
       "Estas son las funciones que soporto:
 1. Háblame en un chat grupal para que sepa que estás ahí:
-  • /start o /ayuda para ver este mensaje
+  • /start, /help o /ayuda para ver este mensaje
   • /holi o /holo
   • /mis_grupos
-  • /mi_zona
   • Todos los otros comandos sirven también, excepto /olvidar
 2. Para registrar tu zona horaria, dime /guardar_zona (/mejor_no para cancelar). Esto sólo funciona en el chat privado conmigo.
+  • Puedes decirme /mi_zona para ver qué zona horaria tengo guardada para ti
 3. Para coordinar eventos en un chat grupal, dime /traducir_fecha [fecha y hora local, opcional]. Puedo traducir varios formatos. Algunos ejemplos:
   • /traducir_fecha 2020-05-06 13:14:15
   • /traducir_fecha 15 octubre 2016
   • /traducir_fecha 5 PM
-  • /traducir_fecha (si no me das una fecha, asumo que quieres la fecha actual)
+  • /traducir_fecha (si no me das una fecha, asumo que quieres la fecha actual) d(>_･ )
 4. Para borrar tus datos (ಥ﹏ಥ), dime /olvidar
 
 Si quieres saber cómo funciono, o si quieres copiar mi código (*≧∀≦*), puedes encontrarlo aquí: https://github.com/thebozzcl/SecretariaBot
@@ -47,7 +47,7 @@ Si tienes preguntas, necesitas ayuda o si me matas accidentalmente （◞‸◟�
       command = message.text.nil? ? nil : message.text.gsub('@nombri_mcnombrebot', '').split(' ')[0]
       @user_info_handler.register_user(message) if command != '/olvidar'
       case command
-      when '/start', '/ayuda'
+      when '/start', '/ayuda', '/help'
         reply(bot, message, @commands)
       when '/holi', '/holo'
         reply(bot, message, "Holi, #{message.from.first_name} (✿╹◡╹)")
