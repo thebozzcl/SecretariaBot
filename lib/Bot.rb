@@ -30,7 +30,7 @@ class Bot
 
 Si quieres saber cómo funciono, o si quieres copiar mi código (*≧∀≦*), puedes encontrarlo aquí: https://github.com/thebozzcl/SecretariaBot
 
-Si tienes preguntas, necesitas ayuda o si me matas accidentalmente （◞‸◟）, mándale un mensaje a @TheBozzUS diciendo 'Bozzolo, no funciona'."
+Si tienes preguntas, necesitas ayuda o si me matas accidentalmente （；・д・）, mándale un mensaje a @TheBozzUS diciendo 'Bozzolo, no funciona'."
 
     Telegram::Bot::Client.run(bot_token) do |bot|
       bot.listen do |message|
