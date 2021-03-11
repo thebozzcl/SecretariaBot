@@ -1,7 +1,7 @@
 class MessageHandler
   def initialize
     @bubble_start = 'く'
-    @bubble_end = '❩'
+    @bubble_end = ')'
   end
 
   def get_happy
