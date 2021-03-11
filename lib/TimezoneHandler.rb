@@ -3,11 +3,12 @@ require 'time'
 require_relative './model/DateKey'
 
 class TimezoneHandler
-  def initialize(log_out, user_info, chat_info, user_info_handler, geonames_username)
+  def initialize(log_out, user_info, chat_info, user_info_handler, message_handler, geonames_username)
     @log_out = log_out
     @user_info = user_info
     @chat_info = chat_info
     @user_info_handler = user_info_handler
+    @message_handler = message_handler
 
     Timezone::Lookup.config(:geonames) do |c|
       c.username = geonames_username
@@ -22,7 +23,7 @@ class TimezoneHandler
     bot.api.send_message(
       chat_id: message.chat.id,
       reply_to_message_id: message.message_id,
-      text: 'Para guardar tu zona horaria, necesito ver tu ubicación (*≖ᴗ≖*✿)',
+      text: @message_handler.render_bashful_message('Para guardar tu zona horaria, necesito ver tu ubicación.', nil),
       reply_markup: markup
     )
   end
@@ -36,17 +37,17 @@ class TimezoneHandler
     timezone_name = timezone.name
     user_name = @user_info_handler.get_username(message)
     @user_info.register_user_timezone(message.from.id, user_name, timezone_name)
-    "Oki, tu zona horaria es #{timezone_name}."
+    @message_handler.render_happy_message("Oki, tu zona horaria es #{timezone_name}.", nil)
   end
 
   def translate_date(message)
-    return 'Esto no es un grupo (ఠ ͟ ಠ)' if message.chat.type == 'private'
+    return @message_handler.render_confused_message('Esto no es un grupo.', nil) if message.chat.type == 'private'
 
     current_user_info = @user_info.get_user_info(message.from.id)
-    return "Dile a @TheBozzUS 'Bozzolo, no funciona'" if current_user_info.nil?
+    return @message_handler.render_sad_message("Dile a @TheBozzUS 'Bozzolo, no funciona'", nil) if current_user_info.nil?
 
     from_timezone_name = current_user_info[:timezone]
-    return 'No sé dónde estás (⋟﹏⋞) Dime /guardar_zona en privado primero.' if from_timezone_name.nil?
+    return @message_handler.render_confused_message('No sé dónde estás. Dime /guardar_zona en privado primero.', nil) if from_timezone_name.nil?
 
     from_timezone = Timezone.fetch(from_timezone_name)
 
@@ -57,13 +58,13 @@ class TimezoneHandler
       begin
         from_time_utc = Time.parse("#{command_and_args[1]} #{from_timezone.abbr(Time.now)}").utc
       rescue
-        return "No pude entender lo que me dijiste (⊙_☉) ¿Me pasaste una fecha y hora válidas? Dime /ayuda para ver ejemplos.'"
+        return @message_handler.render_confused_message('No pude entender lo que me dijiste. ¿Me pasaste una fecha y hora válidas? Dime /ayuda para ver ejemplos.', nil)
       end
     end
 
     members_list = @chat_info.get_known_chat_members(message.chat.id)
     users_info = @user_info.get_users_info(members_list)
-    unknown_date_key = DateKey.new('No sé (T⌓T) ', 99_999)
+    unknown_date_key = DateKey.new("No sé #{@message_handler.get_sad}", 99_999)
     translated_dates = Hash[users_info.map do |user_info|
       user_timezone_name = user_info[:timezone]
       if user_timezone_name.nil?
@@ -74,7 +75,7 @@ class TimezoneHandler
         [user_info[:from_name].to_s, DateKey.new(translated_date.strftime('%a %F %T'), translated_date.hour)]
       end
     end]
-    return 'Nadie me ha saludado en este grupo （；・д・）' if translated_dates.values.empty?
+    return @message_handler.render_sad_message('Nadie me ha saludado en este grupo.', nil) if translated_dates.values.empty?
 
     reversed_translated_dates = {}
     translated_dates.each do |user_name, date|
@@ -89,6 +90,6 @@ class TimezoneHandler
       "#{date.date_str}: #{user_names.join(', ')}"
     end
 
-    "• #{translated_dates_strings.join("\n• ")}"
+    @message_handler.render_happy_message('Éstas son las fechas del grupo:', "• #{translated_dates_strings.join("\n• ")}")
   end
 end
