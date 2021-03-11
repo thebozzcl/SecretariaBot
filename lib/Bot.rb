@@ -67,7 +67,6 @@ Si tienes preguntas, necesitas ayuda o si me matas accidentalmente （；・д�
         reply(bot, message, @timezone_handler.try_extract_location(message))
       else
         @log_out.info("Unexpected message: #{message.inspect}")
-        reply(bot, message, 'No sé cómo ayudarte con eso (・∧‐)ゞ .' + @commands) if message.reply_to_message.nil?
       end
     else
       @log_out.info("Unexpected message type: #{message.inspect}")
